@@ -1,0 +1,98 @@
+{
+  "name": "bol-desktop",
+  "productName": "BOL OF MONATIUM",
+  "version": "1.0.0",
+  "description": "High-performance desktop client for BOL OF MONATIUM (bol.monatium.com) — 3D Web FPS Game",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DJTOMATO/bol-desktop.git"
+  },
+  "homepage": "https://github.com/DJTOMATO/bol-desktop#readme",
+  "bugs": {
+    "url": "https://github.com/DJTOMATO/bol-desktop/issues"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --x64 --publish never",
+    "build:win:arm64": "electron-builder --win --arm64 --config.nsis.oneClick=false --config.nsis.allowToChangeInstallationDirectory=true --publish never",
+    "build:mac": "electron-builder --mac --publish never",
+    "build:linux": "electron-builder --linux --publish never"
+  },
+  "keywords": [
+    "electron",
+    "bol",
+    "monatium",
+    "fps",
+    "web-fps",
+    "threejs",
+    "trickcal",
+    "webgl",
+    "gaming"
+  ],
+  "author": "Glas",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.glas.boldesktop",
+    "productName": "BOL OF MONATIUM",
+    "npmRebuild": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis"
+        },
+        {
+          "target": "zip"
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BOL OF MONATIUM",
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "icon.icns",
+      "category": "public.app-category.games",
+      "artifactName": "${productName}-${version}-mac-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "icon.png",
+      "category": "Game",
+      "maintainer": "Glas <48269777+DJTOMATO@users.noreply.github.com>",
+      "artifactName": "${productName}-${version}-linux-${arch}.${ext}"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "bolmod.js",
+      "index.html",
+      "node_modules/**/*",
+      "icon.ico",
+      "icon.png",
+      "icon.icns"
+    ]
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
+  }
+}

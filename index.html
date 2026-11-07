@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>BOL OF MONATIUM — Desktop Client</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d10;
+      --surface: #14181f;
+      --surface-border: #1f2733;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.4);
+      --accent-hover: #7dd3fc;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --faint: #475569;
+      --sans: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 20%, #16202c 0%, #0d1218 55%, var(--bg) 100%) fixed var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .container {
+      max-width: 580px;
+      padding: 40px 32px;
+      background: rgba(20, 24, 31, 0.85);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 40px rgba(56, 189, 248, 0.08);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      position: relative;
+    }
+
+    .lang-toggle {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+      background: var(--accent);
+      color: #0b0d10;
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 5px 14px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 38px);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1.1;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    h1 span {
+      display: block;
+      font-size: 0.5em;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      color: var(--accent);
+      margin-top: 6px;
+      text-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .status-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: rgba(11, 13, 16, 0.6);
+      border: 1px solid #1e293b;
+      border-radius: 30px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .dot.err {
+      background: var(--danger);
+      box-shadow: 0 0 12px var(--danger);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.35;
+        transform: scale(0.85);
+      }
+    }
+
+    .action-btn {
+      padding: 12px 32px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #0b0d10;
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    .footer {
+      font-size: 12px;
+      color: var(--faint);
+      letter-spacing: 0.05em;
+    }
+
+    .footer a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer a:hover {
+      color: var(--accent);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btn-ko" onclick="setLanguage('ko')">한국어</button>
+      <button class="lang-btn" id="btn-en" onclick="setLanguage('en')">English</button>
+    </div>
+
+    <div class="badge" id="sub-badge">3D Tactical Web FPS</div>
+    <h1>
+      BOL OF MONATIUM
+      <span id="sub-title">볼 오브 모나티엄</span>
+    </h1>
+
+    <div class="status-box">
+      <span class="dot" id="dot"></span>
+      <span id="msg">서버에 연결하는 중입니다...</span>
+    </div>
+
+    <button type="button" class="action-btn" id="retry" hidden>연결 재시도</button>
+
+    <div class="footer">
+      <span>Official Web Game: </span>
+      <a href="https://bol.monatium.com/" target="_blank">bol.monatium.com</a>
+    </div>
+  </div>
+
+  <script>
+    const TARGET_URL = 'https://bol.monatium.com/';
+    const params = new URLSearchParams(window.location.search);
+    const isError = params.get('error') === '1';
+    const dot = document.getElementById('dot');
+    const msg = document.getElementById('msg');
+    const retryBtn = document.getElementById('retry');
+    const subBadge = document.getElementById('sub-badge');
+    const subTitle = document.getElementById('sub-title');
+    const btnKo = document.getElementById('btn-ko');
+    const btnEn = document.getElementById('btn-en');
+
+    let currentLang = 'ko';
+
+    const I18N = {
+      ko: {
+        badge: '3D 택티컬 웹 FPS',
+        subTitle: '볼 오브 모나티엄 데스크톱',
+        connecting: '모나티엄 서버에 연결하는 중입니다...',
+        errorMsg: '서버에 연결할 수 없습니다. 인터넷 연결을 확인해 주세요.',
+        retryBtn: '연결 재시도'
+      },
+      en: {
+        badge: '3D Tactical Web FPS',
+        subTitle: 'BOL OF MONATIUM DESKTOP',
+        connecting: 'Connecting to Monatium servers...',
+        errorMsg: 'Unable to connect to server. Please check your network connection.',
+        retryBtn: 'Retry Connection'
+      }
+    };
+
+    function updateTexts() {
+      const texts = I18N[currentLang];
+      subBadge.textContent = texts.badge;
+      subTitle.textContent = texts.subTitle;
+      retryBtn.textContent = texts.retryBtn;
+      if (isError) {
+        msg.textContent = texts.errorMsg;
+      } else {
+        msg.textContent = texts.connecting;
+      }
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      if (lang === 'ko') {
+        btnKo.classList.add('active');
+        btnEn.classList.remove('active');
+      } else {
+        btnEn.classList.add('active');
+        btnKo.classList.remove('active');
+      }
+      updateTexts();
+    }
+
+    if (isError) {
+      dot.classList.add('err');
+      retryBtn.hidden = false;
+      updateTexts();
+    } else {
+      updateTexts();
+      // Auto-navigate to target site
+      setTimeout(() => {
+        if (window.electronAPI && typeof window.electronAPI.loadSite === 'function') {
+          window.electronAPI.loadSite(TARGET_URL);
+        } else {
+          window.location.href = TARGET_URL;
+        }
+      }, 500);
+    }
+
+    retryBtn.addEventListener('click', () => {
+      retryBtn.hidden = true;
+      dot.classList.remove('err');
+      msg.textContent = I18N[currentLang].connecting;
+      if (window.electronAPI && typeof window.electronAPI.retryConnection === 'function') {
+        window.electronAPI.retryConnection();
+      } else {
+        window.location.href = TARGET_URL;
+      }
+    });
+  </script>
+</body>
+
+</html>
