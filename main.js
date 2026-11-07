@@ -5,6 +5,11 @@ const fs = require('fs');
 const TARGET_URL = 'https://bol.monatium.com/';
 const ALLOWED_HOST = 'bol.monatium.com';
 
+function isAllowedDomain(hostname) {
+  if (!hostname) return false;
+  return hostname === 'monatium.com' || hostname.endsWith('.monatium.com');
+}
+
 // Maximize GPU, WebGL, WebGPU, and 3D Three.js hardware performance for FPS gaming
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('force_high_performance_gpu');
@@ -278,16 +283,108 @@ function createWindow() {
     callback(false);
   });
 
-  // Open external links in default system browser
+  // Open external links in default system browser, but allow authentication popups for Monatium
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     try {
       const parsed = new URL(url);
-      if (parsed.hostname === ALLOWED_HOST) {
-        return { action: 'allow' };
+      if (isAllowedDomain(parsed.hostname)) {
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: {
+            width: 480,
+            height: 720,
+            minWidth: 400,
+            minHeight: 520,
+            autoHideMenuBar: true,
+            title: 'Sign in with Monatium',
+            backgroundColor: '#0b0d10',
+            icon: winIcon,
+            parent: mainWindow,
+            webPreferences: {
+              contextIsolation: true,
+              nodeIntegration: false,
+              backgroundThrottling: false,
+              spellcheck: false
+            }
+          }
+        };
       }
     } catch (_) {}
     shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // Handle child authentication / popup windows
+  mainWindow.webContents.on('did-create-window', (childWindow) => {
+    try {
+      childWindow.setMenu(null);
+    } catch (_) {}
+
+    childWindow.webContents.setWindowOpenHandler(({ url: childUrl }) => {
+      try {
+        const parsed = new URL(childUrl);
+        if (isAllowedDomain(parsed.hostname)) {
+          return { action: 'allow' };
+        }
+      } catch (_) {}
+      shell.openExternal(childUrl);
+      return { action: 'deny' };
+    });
+
+    const checkBomAuthUrl = (targetUrl) => {
+      if (!targetUrl) return;
+      try {
+        const parsed = new URL(targetUrl);
+        if (parsed.hostname === ALLOWED_HOST && parsed.hash && parsed.hash.includes('bomauth=')) {
+          const rawHash = parsed.hash.replace(/^#bomauth=/, '');
+          const authData = JSON.parse(decodeURIComponent(rawHash));
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.executeJavaScript(`
+              (() => {
+                try {
+                  const data = ${JSON.stringify(authData)};
+                  window.postMessage(data, '*');
+                  if (window.__lobby && window.__lobby.api && typeof window.__lobby.api.adopt === 'function') {
+                    window.__lobby.api.adopt(data);
+                  }
+                } catch (e) {
+                  console.error('[bol-desktop] Failed to adopt auth from redirect:', e);
+                }
+              })()
+            `).catch(() => {});
+          }
+          if (!childWindow.isDestroyed()) {
+            childWindow.close();
+          }
+        }
+      } catch (_) {}
+    };
+
+    childWindow.webContents.on('will-navigate', (event, navUrl) => {
+      try {
+        const parsed = new URL(navUrl);
+        if (parsed.hostname === ALLOWED_HOST && parsed.hash && parsed.hash.includes('bomauth=')) {
+          event.preventDefault();
+          checkBomAuthUrl(navUrl);
+          return;
+        }
+        if (isAllowedDomain(parsed.hostname)) {
+          return;
+        }
+      } catch (_) {}
+      event.preventDefault();
+      shell.openExternal(navUrl);
+    });
+
+    childWindow.webContents.on('did-navigate-in-page', (event, inPageUrl) => {
+      checkBomAuthUrl(inPageUrl);
+    });
+
+    childWindow.webContents.on('did-finish-load', () => {
+      if (!childWindow.isDestroyed()) {
+        checkBomAuthUrl(childWindow.webContents.getURL());
+      }
+    });
   });
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
